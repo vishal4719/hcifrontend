@@ -1,0 +1,16 @@
+﻿body {
+  margin: 0;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  background-color: #06111f;
+}
+
+code {
+  font-family:
+    "JetBrains Mono", "Fira Code", "SFMono-Regular", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}

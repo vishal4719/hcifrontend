@@ -1,0 +1,844 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import "./App.css";
+
+const dummyData = {
+  user: {
+    name: "Alex Johnson",
+    joinDate: "2023-01-15",
+    membership: "Premium",
+  },
+  overview: {
+    totalBalance: 12847.32,
+    monthlyExpenses: 3421.89,
+    monthlyIncome: 5200.0,
+    savingsRate: 68,
+    netWorth: 45789.21,
+    creditScore: 780,
+  },
+  transactions: [
+    {
+      id: 1,
+      title: "Lunch at Subway",
+      amount: -12.5,
+      category: "Food",
+      date: "2024-01-15",
+      type: "expense",
+    },
+    {
+      id: 2,
+      title: "Freelance Project",
+      amount: 800.0,
+      category: "Income",
+      date: "2024-01-14",
+      type: "income",
+    },
+    {
+      id: 3,
+      title: "Gas Station",
+      amount: -45.2,
+      category: "Transport",
+      date: "2024-01-13",
+      type: "expense",
+    },
+    {
+      id: 4,
+      title: "Rent Payment",
+      amount: -1200.0,
+      category: "Housing",
+      date: "2024-01-10",
+      type: "expense",
+    },
+    {
+      id: 5,
+      title: "Mobile Bill",
+      amount: -59.99,
+      category: "Utilities",
+      date: "2024-01-08",
+      type: "expense",
+    },
+    {
+      id: 6,
+      title: "Netflix Subscription",
+      amount: -15.99,
+      category: "Entertainment",
+      date: "2024-01-05",
+      type: "expense",
+    },
+    {
+      id: 7,
+      title: "Tech Gadgets",
+      amount: -299.99,
+      category: "Shopping",
+      date: "2024-01-03",
+      type: "expense",
+    },
+    {
+      id: 8,
+      title: "Salary Deposit",
+      amount: 4500.0,
+      category: "Income",
+      date: "2024-01-01",
+      type: "income",
+    },
+  ],
+  goals: [
+    {
+      id: 1,
+      title: "Emergency Fund",
+      current: 3250,
+      target: 5000,
+      progress: 65,
+      deadline: "2024-06-30",
+      priority: "high",
+    },
+    {
+      id: 2,
+      title: "Vacation Fund",
+      current: 1200,
+      target: 3000,
+      progress: 40,
+      deadline: "2024-08-15",
+      priority: "medium",
+    },
+    {
+      id: 3,
+      title: "New Car",
+      current: 5000,
+      target: 20000,
+      progress: 25,
+      deadline: "2025-12-31",
+      priority: "medium",
+    },
+    {
+      id: 4,
+      title: "Investment Portfolio",
+      current: 8000,
+      target: 10000,
+      progress: 80,
+      deadline: "2024-04-30",
+      priority: "high",
+    },
+    {
+      id: 5,
+      title: "Home Down Payment",
+      current: 15000,
+      target: 50000,
+      progress: 30,
+      deadline: "2026-03-31",
+      priority: "low",
+    },
+  ],
+  investments: [
+    { id: 1, name: "S&P 500 ETF", value: 8450.0, return: 12.5, change: 2.3 },
+    { id: 2, name: "Tech Stocks", value: 3200.0, return: 8.2, change: 1.7 },
+    { id: 3, name: "Bond Fund", value: 2100.0, return: 4.1, change: 0.5 },
+    {
+      id: 4,
+      name: "Crypto Portfolio",
+      value: 1500.0,
+      return: 25.8,
+      change: 5.2,
+    },
+  ],
+  spendingByCategory: [
+    { category: "Housing", amount: 1200, percentage: 35, color: "#00c9ff" },
+    { category: "Food", amount: 450, percentage: 13, color: "#92fe9d" },
+    { category: "Transport", amount: 320, percentage: 9, color: "#ff6b6b" },
+    { category: "Utilities", amount: 180, percentage: 5, color: "#f6d365" },
+    { category: "Entertainment", amount: 150, percentage: 4, color: "#a78bfa" },
+    { category: "Shopping", amount: 300, percentage: 9, color: "#fdba74" },
+    { category: "Others", amount: 821.89, percentage: 25, color: "#c084fc" },
+  ],
+};
+
+const hciConcepts = {
+  skipLink: "Skip link keeps keyboard travel efficient.",
+  navBar: "Persistent navigation reduces wayfinding cost.",
+  navButtons: "Buttons expose state via aria-current.",
+  themeToggle: "Theme toggle honours preference and persists choice.",
+  cards: "Cards group related info with depth and feedback.",
+  progressBars: "Progress bars communicate completion quickly.",
+  transactions: "Colour tokens separate credits and debits instantly.",
+  buttons: "Buttons meet 44px tap target minimum.",
+  responsive: "Layouts reflow for smaller viewports.",
+};
+
+const formatCurrency = (amount) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+    amount,
+  );
+
+const formatDate = (dateString) =>
+  new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
+const getProgressColor = (progress) => {
+  if (progress >= 80) return "var(--accent-success)";
+  if (progress >= 50) return "var(--accent-primary)";
+  return "var(--accent-warning)";
+};
+
+const getPriorityColor = (priority) => {
+  switch (priority) {
+    case "high":
+      return "var(--accent-warning)";
+    case "medium":
+      return "var(--accent-primary)";
+    case "low":
+      return "var(--accent-info)";
+    default:
+      return "var(--text-muted)";
+  }
+};
+
+const App = () => {
+  const [activeScreen, setActiveScreen] = useState("welcome");
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const stored = window.localStorage.getItem("theme");
+    if (stored) return stored === "dark";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
+  const [isNavOpen, setIsNavOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 768px)").matches;
+  });
+  const [financialData, setFinancialData] = useState({});
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    content: "",
+    x: 0,
+    y: 0,
+  });
+  const mainRef = useRef(null);
+
+  useEffect(() => {
+    setFinancialData(dummyData);
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const theme = isDarkMode ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    document.body.dataset.theme = theme;
+    try {
+      window.localStorage.setItem("theme", theme);
+    } catch (error) {
+      // ignore storage issues
+    }
+  }, [isDarkMode]);
+
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setTooltip((prev) => ({ ...prev, visible: false }));
+        setIsNavOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, []);
+
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.focus();
+    }
+  }, [activeScreen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(max-width: 768px)");
+    const handleChange = (event) => {
+      setIsMobile(event.matches);
+      if (!event.matches) {
+        setIsNavOpen(false);
+      }
+    };
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.style.overflow = isNavOpen && isMobile ? "hidden" : "";
+  }, [isNavOpen, isMobile]);
+
+  const totals = useMemo(() => {
+    const income =
+      financialData.transactions
+        ?.filter((transaction) => transaction.type === "income")
+        ?.reduce((sum, transaction) => sum + transaction.amount, 0) ?? 0;
+    const expenses =
+      financialData.transactions
+        ?.filter((transaction) => transaction.type === "expense")
+        ?.reduce((sum, transaction) => sum + transaction.amount, 0) ?? 0;
+    const net =
+      financialData.transactions?.reduce(
+        (sum, transaction) => sum + transaction.amount,
+        0,
+      ) ?? 0;
+    return { income, expenses, net };
+  }, [financialData.transactions]);
+
+  const navItems = useMemo(
+    () => [
+      { key: "welcome", label: "Home" },
+      { key: "dashboard", label: "Dashboard" },
+      { key: "transactions", label: "Transactions" },
+      { key: "progress", label: "Goals" },
+      { key: "investments", label: "Investments" },
+    ],
+    [],
+  );
+
+  const handleScreenChange = (screen) => {
+    setActiveScreen(screen);
+    setIsNavOpen(false);
+  };
+
+  const showTooltip = (content) => (event) => {
+    setTooltip({ visible: true, content, x: event.clientX, y: event.clientY });
+  };
+
+  const hideTooltip = () => setTooltip((prev) => ({ ...prev, visible: false }));
+
+  return (
+    <div className={`app ${isDarkMode ? "dark" : "light"}`}>
+      {tooltip.visible && (
+        <div
+          className="hci-tooltip"
+          style={{ left: tooltip.x + 12, top: tooltip.y + 12 }}
+          role="tooltip"
+        >
+          {tooltip.content}
+        </div>
+      )}
+
+      <a
+        className="skip-link"
+        href="#main"
+        onMouseEnter={showTooltip(hciConcepts.skipLink)}
+        onMouseLeave={hideTooltip}
+      >
+        Skip to content
+      </a>
+
+      <nav
+        className="nav-bar"
+        aria-label="Primary navigation"
+        onMouseEnter={showTooltip(hciConcepts.navBar)}
+        onMouseLeave={hideTooltip}
+      >
+        <div className="nav-wrap">
+          <div className="logo">
+            <button
+              type="button"
+              className="brand"
+              onClick={() => handleScreenChange("welcome")}
+            >
+              FinanceWise
+            </button>
+            <span className="user-badge">Pro</span>
+          </div>
+
+          <button
+            type="button"
+            className={`nav-toggle ${isNavOpen ? "open" : ""}`}
+            aria-expanded={isNavOpen}
+            aria-controls="primary-navigation"
+            aria-label="Toggle navigation"
+            onClick={() => setIsNavOpen((prev) => !prev)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+
+          <div
+            id="primary-navigation"
+            className={`nav-actions ${isNavOpen ? "open" : ""}`}
+            role="navigation"
+            aria-hidden={isMobile && !isNavOpen ? true : undefined}
+          >
+            {navItems.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                className={`nav-btn ${activeScreen === item.key ? "active" : ""}`}
+                onClick={() => handleScreenChange(item.key)}
+                aria-current={activeScreen === item.key}
+                onMouseEnter={showTooltip(hciConcepts.navButtons)}
+                onMouseLeave={hideTooltip}
+              >
+                {item.label}
+              </button>
+            ))}
+
+            <button
+              type="button"
+              className="theme-toggle"
+              onClick={() => setIsDarkMode((prev) => !prev)}
+              aria-pressed={isDarkMode}
+              aria-label={`Switch to ${isDarkMode ? "light" : "dark"} mode`}
+              onMouseEnter={showTooltip(hciConcepts.themeToggle)}
+              onMouseLeave={hideTooltip}
+            >
+              <span className="theme-icon" aria-hidden="true">
+                {isDarkMode ? "🌙" : "☀️"}
+              </span>
+              <span className="theme-label">
+                {isDarkMode ? "Dark" : "Light"} mode
+              </span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {isMobile && isNavOpen && (
+        <button
+          type="button"
+          className="nav-backdrop"
+          aria-label="Close navigation"
+          onClick={() => setIsNavOpen(false)}
+        />
+      )}
+
+      <main id="main" className="container" ref={mainRef} tabIndex={-1}>
+        <section
+          id="welcome"
+          className={`screen welcome ${activeScreen === "welcome" ? "active" : ""}`}
+        >
+          <div className="welcome-hero">
+            <article
+              className="welcome-card card"
+              onMouseEnter={showTooltip(hciConcepts.cards)}
+              onMouseLeave={hideTooltip}
+            >
+              <header className="welcome-header">
+                <h1 className="welcome-title">
+                  Welcome back,{" "}
+                  <span className="gradient-text">
+                    {financialData.user?.name}
+                  </span>
+                  ! 👋
+                </h1>
+                <p className="welcome-subtitle">
+                  Here is your snapshot for today.
+                </p>
+              </header>
+
+              <div className="quick-stats">
+                <div className="quick-stat">
+                  <span className="stat-icon" aria-hidden="true">
+                    💰
+                  </span>
+                  <div>
+                    <p className="stat-label">Available balance</p>
+                    <p className="stat-value">
+                      {formatCurrency(
+                        financialData.overview?.totalBalance ?? 0,
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="quick-stat">
+                  <span className="stat-icon" aria-hidden="true">
+                    📈
+                  </span>
+                  <div>
+                    <p className="stat-label">Monthly income</p>
+                    <p className="stat-value">
+                      {formatCurrency(
+                        financialData.overview?.monthlyIncome ?? 0,
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="quick-stat">
+                  <span className="stat-icon" aria-hidden="true">
+                    📉
+                  </span>
+                  <div>
+                    <p className="stat-label">Monthly expenses</p>
+                    <p className="stat-value">
+                      {formatCurrency(
+                        financialData.overview?.monthlyExpenses ?? 0,
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="action-buttons">
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={() => handleScreenChange("dashboard")}
+                >
+                  View dashboard
+                </button>
+                <button
+                  type="button"
+                  className="btn ghost"
+                  onClick={() => handleScreenChange("transactions")}
+                >
+                  Review transactions
+                </button>
+                <button
+                  type="button"
+                  className="btn ghost"
+                  onClick={() => handleScreenChange("progress")}
+                >
+                  Update goals
+                </button>
+              </div>
+            </article>
+
+            <aside className="recent-activity card">
+              <h3>Recent activity</h3>
+              <ul className="activity-list">
+                {(financialData.transactions ?? [])
+                  .slice(0, 4)
+                  .map((transaction) => (
+                    <li key={transaction.id} className="activity-item">
+                      <span className="activity-icon" aria-hidden="true">
+                        {transaction.type === "income" ? "⬆️" : "⬇️"}
+                      </span>
+                      <div className="activity-details">
+                        <span className="activity-title">
+                          {transaction.title}
+                        </span>
+                        <span className="activity-meta">
+                          {formatDate(transaction.date)} •{" "}
+                          {transaction.category}
+                        </span>
+                      </div>
+                      <span className={`activity-amount ${transaction.type}`}>
+                        {formatCurrency(transaction.amount)}
+                      </span>
+                    </li>
+                  ))}
+              </ul>
+            </aside>
+          </div>
+        </section>
+
+        <section
+          id="dashboard"
+          className={`screen dashboard ${activeScreen === "dashboard" ? "active" : ""}`}
+        >
+          <header className="section-header">
+            <h2>Financial dashboard</h2>
+            <p className="muted">Benchmark your progress at a glance.</p>
+          </header>
+
+          <div className="metrics-grid">
+            <article
+              className="metric-card card highlight"
+              onMouseEnter={showTooltip(hciConcepts.cards)}
+              onMouseLeave={hideTooltip}
+            >
+              <div className="metric-header">
+                <h3>Total balance</h3>
+                <span className="trend positive">+5.2%</span>
+              </div>
+              <p className="metric-value">
+                {formatCurrency(financialData.overview?.totalBalance ?? 0)}
+              </p>
+              <div className="sparkline">
+                {[80, 60, 90, 75, 85].map((height, index) => (
+                  <span
+                    key={`${height}-${index}`}
+                    style={{ height: `${height}%` }}
+                  />
+                ))}
+              </div>
+            </article>
+
+            <article className="metric-card card">
+              <div className="metric-header">
+                <h3>Monthly income</h3>
+                <span className="trend positive">+2.1%</span>
+              </div>
+              <p className="metric-value">
+                {formatCurrency(financialData.overview?.monthlyIncome ?? 0)}
+              </p>
+              <p className="metric-subtext">From three sources</p>
+            </article>
+
+            <article className="metric-card card">
+              <div className="metric-header">
+                <h3>Monthly expenses</h3>
+                <span className="trend negative">+12.3%</span>
+              </div>
+              <p className="metric-value">
+                {formatCurrency(financialData.overview?.monthlyExpenses ?? 0)}
+              </p>
+              <p className="metric-subtext">Across seven categories</p>
+            </article>
+
+            <article className="metric-card card">
+              <div className="metric-header">
+                <h3>Savings rate</h3>
+                <span className="trend positive">+8.5%</span>
+              </div>
+              <p className="metric-value">
+                {financialData.overview?.savingsRate ?? 0}%
+              </p>
+              <p className="metric-subtext">Betterthan 72% of users</p>
+            </article>
+          </div>
+
+          <div className="analysis-grid">
+            <article
+              className="card"
+              onMouseEnter={showTooltip(hciConcepts.responsive)}
+              onMouseLeave={hideTooltip}
+            >
+              <h3>Spending by category</h3>
+              <ul className="breakdown-list">
+                {(financialData.spendingByCategory ?? []).map((item) => (
+                  <li key={item.category} className="breakdown-item">
+                    <div className="breakdown-labels">
+                      <span>{item.category}</span>
+                      <span>{formatCurrency(item.amount)}</span>
+                    </div>
+                    <div className="breakdown-bar">
+                      <span
+                        style={{
+                          width: `${item.percentage}%`,
+                          backgroundColor: item.color,
+                        }}
+                      />
+                    </div>
+                    <span className="percentage">{item.percentage}%</span>
+                  </li>
+                ))}
+              </ul>
+            </article>
+
+            <article className="card">
+              <h3>Financial tips</h3>
+              <ul className="tips-list">
+                <li>
+                  <strong>Set up auto-savings</strong>
+                  <p>Save 20% of your income automatically each month.</p>
+                </li>
+                <li>
+                  <strong>Review subscriptions</strong>
+                  <p>Trim unused services to free up discretionary income.</p>
+                </li>
+                <li>
+                  <strong>Boost retirement</strong>
+                  <p>
+                    Increase contributions by five percent to stay ahead of
+                    target.
+                  </p>
+                </li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section
+          id="transactions"
+          className={`screen transactions ${activeScreen === "transactions" ? "active" : ""}`}
+        >
+          <header className="section-header">
+            <h2>Transactions</h2>
+            <p className="muted">Quick scan of recent inflows and outflows.</p>
+          </header>
+
+          <div
+            className="transactions-list card"
+            onMouseEnter={showTooltip(hciConcepts.transactions)}
+            onMouseLeave={hideTooltip}
+          >
+            {(financialData.transactions ?? []).map((transaction) => (
+              <article key={transaction.id} className="transaction-item">
+                <span className={`avatar ${transaction.type}`}>
+                  {transaction.type === "income" ? "+" : "−"}
+                </span>
+                <div className="details">
+                  <span className="title">{transaction.title}</span>
+                  <span className="meta">
+                    {formatDate(transaction.date)} • {transaction.category}
+                  </span>
+                </div>
+                <span className={`amount ${transaction.type}`}>
+                  {formatCurrency(transaction.amount)}
+                </span>
+              </article>
+            ))}
+          </div>
+
+          <div className="transactions-summary card">
+            <div className="summary-item">
+              <span>Total income</span>
+              <strong className="income">
+                {formatCurrency(totals.income)}
+              </strong>
+            </div>
+            <div className="summary-item">
+              <span>Total expenses</span>
+              <strong className="expense">
+                {formatCurrency(totals.expenses)}
+              </strong>
+            </div>
+            <div className="summary-item highlight">
+              <span>Net flow</span>
+              <strong className="net">{formatCurrency(totals.net)}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="progress"
+          className={`screen progress ${activeScreen === "progress" ? "active" : ""}`}
+        >
+          <header className="section-header">
+            <h2>Goals</h2>
+            <p className="muted">Track momentum towards each milestone.</p>
+          </header>
+
+          <div
+            className="goals-grid"
+            onMouseEnter={showTooltip(hciConcepts.progressBars)}
+            onMouseLeave={hideTooltip}
+          >
+            {(financialData.goals ?? []).map((goal) => (
+              <article key={goal.id} className="goal-card card">
+                <div className="goal-header">
+                  <h3>{goal.title}</h3>
+                  <span
+                    className="priority"
+                    style={{ backgroundColor: getPriorityColor(goal.priority) }}
+                  >
+                    {goal.priority}
+                  </span>
+                </div>
+                <div className="goal-progress">
+                  <div className="progress-info">
+                    <span>
+                      {formatCurrency(goal.current)} of{" "}
+                      {formatCurrency(goal.target)}
+                    </span>
+                    <span>{goal.progress}%</span>
+                  </div>
+                  <div className="progress-bar">
+                    <span
+                      className="progress-fill"
+                      style={{
+                        width: `${goal.progress}%`,
+                        backgroundColor: getProgressColor(goal.progress),
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="goal-meta">
+                  <div>
+                    <span className="label">Target date</span>
+                    <span>{new Date(goal.deadline).toLocaleDateString()}</span>
+                  </div>
+                  <div>
+                    <span className="label">Remaining</span>
+                    <span>{formatCurrency(goal.target - goal.current)}</span>
+                  </div>
+                </div>
+                <div className="goal-actions">
+                  <button type="button" className="btn ghost small">
+                    Add funds
+                  </button>
+                  <button type="button" className="btn ghost small">
+                    Edit goal
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section
+          id="investments"
+          className={`screen investments ${activeScreen === "investments" ? "active" : ""}`}
+        >
+          <header className="section-header">
+            <h2>Investments</h2>
+            <p className="muted">Portfolio allocation and daily change.</p>
+          </header>
+
+          <div className="investments-overview">
+            <article
+              className="card portfolio"
+              onMouseEnter={showTooltip(hciConcepts.cards)}
+              onMouseLeave={hideTooltip}
+            >
+              <h3>Portfolio value</h3>
+              <p className="portfolio-total">
+                {formatCurrency(
+                  (financialData.investments ?? []).reduce(
+                    (sum, item) => sum + item.value,
+                    0,
+                  ),
+                )}
+              </p>
+              <span className="portfolio-change">+3.2% ($425.50) today</span>
+            </article>
+
+            <div className="performance-grid">
+              <article className="metric-card card">
+                <h4>Total return</h4>
+                <p className="metric-value positive">+12.6%</p>
+              </article>
+              <article className="metric-card card">
+                <h4>Best performer</h4>
+                <p className="metric-value">Crypto +25.8%</p>
+              </article>
+              <article className="metric-card card">
+                <h4>Diversification</h4>
+                <p className="metric-value">Good</p>
+              </article>
+            </div>
+          </div>
+
+          <div className="investments-grid">
+            {(financialData.investments ?? []).map((investment) => (
+              <article key={investment.id} className="investment-card card">
+                <header className="investment-header">
+                  <h3>{investment.name}</h3>
+                  <span
+                    className={`return ${investment.return > 10 ? "positive" : "neutral"}`}
+                  >
+                    {investment.return}%
+                  </span>
+                </header>
+                <p className="investment-value">
+                  {formatCurrency(investment.value)}
+                </p>
+                <p
+                  className={`investment-change ${investment.change >= 0 ? "positive" : "negative"}`}
+                >
+                  {investment.change >= 0 ? "+" : ""}
+                  {investment.change}% today
+                </p>
+                <div className="mini-chart">
+                  {[70, 85, 60, 90, 75].map((height, index) => (
+                    <span
+                      key={`${investment.id}-${index}`}
+                      style={{ height: `${height}%` }}
+                    />
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+};
+
+export default App;
