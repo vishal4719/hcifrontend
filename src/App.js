@@ -3,7 +3,7 @@ import "./App.css";
 
 const dummyData = {
   user: {
-    name: "hello Guptaji",
+    name: "Alex Johnson",
     joinDate: "2023-01-15",
     membership: "Premium",
   },
@@ -164,7 +164,7 @@ const hciConcepts = {
 };
 
 const formatCurrency = (amount) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(
     amount,
   );
 
@@ -306,7 +306,7 @@ const App = () => {
   const hideTooltip = () => setTooltip((prev) => ({ ...prev, visible: false }));
 
   return (
-    <div className={`app ${isDarkMode ? "dark" : "light"}`}>
+    <div className={app ${isDarkMode ? "dark" : "light"}}>
       {tooltip.visible && (
         <div
           className="hci-tooltip"
@@ -346,7 +346,7 @@ const App = () => {
 
           <button
             type="button"
-            className={`nav-toggle ${isNavOpen ? "open" : ""}`}
+            className={nav-toggle ${isNavOpen ? "open" : ""}}
             aria-expanded={isNavOpen}
             aria-controls="primary-navigation"
             aria-label="Toggle navigation"
@@ -359,7 +359,7 @@ const App = () => {
 
           <div
             id="primary-navigation"
-            className={`nav-actions ${isNavOpen ? "open" : ""}`}
+            className={nav-actions ${isNavOpen ? "open" : ""}}
             role="navigation"
             aria-hidden={isMobile && !isNavOpen ? true : undefined}
           >
@@ -367,7 +367,7 @@ const App = () => {
               <button
                 key={item.key}
                 type="button"
-                className={`nav-btn ${activeScreen === item.key ? "active" : ""}`}
+                className={nav-btn ${activeScreen === item.key ? "active" : ""}}
                 onClick={() => handleScreenChange(item.key)}
                 aria-current={activeScreen === item.key}
                 onMouseEnter={showTooltip(hciConcepts.navButtons)}
@@ -382,12 +382,12 @@ const App = () => {
               className="theme-toggle"
               onClick={() => setIsDarkMode((prev) => !prev)}
               aria-pressed={isDarkMode}
-              aria-label={`Switch to ${isDarkMode ? "light" : "dark"} mode`}
+              aria-label={Switch to ${isDarkMode ? "light" : "dark"} mode}
               onMouseEnter={showTooltip(hciConcepts.themeToggle)}
               onMouseLeave={hideTooltip}
             >
               <span className="theme-icon" aria-hidden="true">
-                {isDarkMode ? "🌙" : "☀️"}
+                {isDarkMode ? "🌙" : "☀"}
               </span>
               <span className="theme-label">
                 {isDarkMode ? "Dark" : "Light"} mode
@@ -409,7 +409,7 @@ const App = () => {
       <main id="main" className="container" ref={mainRef} tabIndex={-1}>
         <section
           id="welcome"
-          className={`screen welcome ${activeScreen === "welcome" ? "active" : ""}`}
+          className={screen welcome ${activeScreen === "welcome" ? "active" : ""}}
         >
           <div className="welcome-hero">
             <article
@@ -505,7 +505,7 @@ const App = () => {
                   .map((transaction) => (
                     <li key={transaction.id} className="activity-item">
                       <span className="activity-icon" aria-hidden="true">
-                        {transaction.type === "income" ? "⬆️" : "⬇️"}
+                        {transaction.type === "income" ? "⬆" : "⬇"}
                       </span>
                       <div className="activity-details">
                         <span className="activity-title">
@@ -516,7 +516,7 @@ const App = () => {
                           {transaction.category}
                         </span>
                       </div>
-                      <span className={`activity-amount ${transaction.type}`}>
+                      <span className={activity-amount ${transaction.type}}>
                         {formatCurrency(transaction.amount)}
                       </span>
                     </li>
@@ -528,7 +528,7 @@ const App = () => {
 
         <section
           id="dashboard"
-          className={`screen dashboard ${activeScreen === "dashboard" ? "active" : ""}`}
+          className={screen dashboard ${activeScreen === "dashboard" ? "active" : ""}}
         >
           <header className="section-header">
             <h2>Financial dashboard</h2>
@@ -551,8 +551,8 @@ const App = () => {
               <div className="sparkline">
                 {[80, 60, 90, 75, 85].map((height, index) => (
                   <span
-                    key={`${height}-${index}`}
-                    style={{ height: `${height}%` }}
+                    key={${height}-${index}}
+                    style={{ height: ${height}% }}
                   />
                 ))}
               </div>
@@ -609,7 +609,7 @@ const App = () => {
                     <div className="breakdown-bar">
                       <span
                         style={{
-                          width: `${item.percentage}%`,
+                          width: ${item.percentage}%,
                           backgroundColor: item.color,
                         }}
                       />
@@ -645,7 +645,7 @@ const App = () => {
 
         <section
           id="transactions"
-          className={`screen transactions ${activeScreen === "transactions" ? "active" : ""}`}
+          className={screen transactions ${activeScreen === "transactions" ? "active" : ""}}
         >
           <header className="section-header">
             <h2>Transactions</h2>
@@ -659,7 +659,7 @@ const App = () => {
           >
             {(financialData.transactions ?? []).map((transaction) => (
               <article key={transaction.id} className="transaction-item">
-                <span className={`avatar ${transaction.type}`}>
+                <span className={avatar ${transaction.type}}>
                   {transaction.type === "income" ? "+" : "−"}
                 </span>
                 <div className="details">
@@ -668,7 +668,7 @@ const App = () => {
                     {formatDate(transaction.date)} • {transaction.category}
                   </span>
                 </div>
-                <span className={`amount ${transaction.type}`}>
+                <span className={amount ${transaction.type}}>
                   {formatCurrency(transaction.amount)}
                 </span>
               </article>
@@ -697,7 +697,7 @@ const App = () => {
 
         <section
           id="progress"
-          className={`screen progress ${activeScreen === "progress" ? "active" : ""}`}
+          className={screen progress ${activeScreen === "progress" ? "active" : ""}}
         >
           <header className="section-header">
             <h2>Goals</h2>
@@ -732,7 +732,7 @@ const App = () => {
                     <span
                       className="progress-fill"
                       style={{
-                        width: `${goal.progress}%`,
+                        width: ${goal.progress}%,
                         backgroundColor: getProgressColor(goal.progress),
                       }}
                     />
@@ -763,7 +763,7 @@ const App = () => {
 
         <section
           id="investments"
-          className={`screen investments ${activeScreen === "investments" ? "active" : ""}`}
+          className={screen investments ${activeScreen === "investments" ? "active" : ""}}
         >
           <header className="section-header">
             <h2>Investments</h2>
@@ -785,7 +785,7 @@ const App = () => {
                   ),
                 )}
               </p>
-              <span className="portfolio-change">+3.2% ($425.50) today</span>
+              <span className="portfolio-change">+3.2% (₹425.50) today</span>
             </article>
 
             <div className="performance-grid">
@@ -810,7 +810,7 @@ const App = () => {
                 <header className="investment-header">
                   <h3>{investment.name}</h3>
                   <span
-                    className={`return ${investment.return > 10 ? "positive" : "neutral"}`}
+                    className={return ${investment.return > 10 ? "positive" : "neutral"}}
                   >
                     {investment.return}%
                   </span>
@@ -819,7 +819,7 @@ const App = () => {
                   {formatCurrency(investment.value)}
                 </p>
                 <p
-                  className={`investment-change ${investment.change >= 0 ? "positive" : "negative"}`}
+                  className={investment-change ${investment.change >= 0 ? "positive" : "negative"}}
                 >
                   {investment.change >= 0 ? "+" : ""}
                   {investment.change}% today
@@ -827,8 +827,8 @@ const App = () => {
                 <div className="mini-chart">
                   {[70, 85, 60, 90, 75].map((height, index) => (
                     <span
-                      key={`${investment.id}-${index}`}
-                      style={{ height: `${height}%` }}
+                      key={${investment.id}-${index}}
+                      style={{ height: ${height}% }}
                     />
                   ))}
                 </div>
