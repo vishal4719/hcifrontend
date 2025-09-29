@@ -3,7 +3,7 @@ import "./App.css";
 
 const dummyData = {
   user: {
-    name: "Alex Johnson",
+    name: "hello Guptaji",
     joinDate: "2023-01-15",
     membership: "Premium",
   },
